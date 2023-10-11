@@ -150,6 +150,19 @@ def test_direct_modification(runner):
     assert result.output == ""
 
 
+def test_forecast(runner):
+    runner = runner(days=2)
+    result = runner.invoke(
+        main_khal, ["-v", "DEBUG", "forecast", "-s", "2023-10-01", "forecast.json"]
+    )
+    print(result.stdout)
+    print("exception: " + str(result.exception))
+    assert not result.exception
+
+
+#    assert result.output == ''
+
+
 def test_simple(runner):
     runner = runner(days=2)
     result = runner.invoke(main_khal, ["list"])

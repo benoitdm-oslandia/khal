@@ -20,3 +20,4 @@ venv/
 .hypothesis/
 .python-version
 .dmypy.json
+/.pytest_cache/
