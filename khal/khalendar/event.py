@@ -682,7 +682,10 @@ class Event:
         attributes["alarm-symbol"] = self._alarm_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
-        attributes["description"] = self.description.strip()
+        if type(self.description) is list:
+            attributes["description"] = self.description[0].strip()
+        else:
+            attributes["description"] = self.description.strip()
         attributes["description-separator"] = ""
         if attributes["description"]:
             attributes["description-separator"] = " :: "

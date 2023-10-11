@@ -21,6 +21,7 @@
 #
 
 import datetime as dt
+import json
 import logging
 import os
 import re
@@ -43,6 +44,7 @@ from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
+from khal.khalendar.forecaster import Forecaster
 
 from .exceptions import ConfigurationError
 from .icalendar import cal_from_ics, split_ics
@@ -94,7 +96,7 @@ def calendar(
     full=False,
     bold_for_light_color: bool=True,
     env=None,
-    ):
+):
     term_width, _ = get_terminal_size()
     lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
     rwidth = term_width - lwidth - 4
@@ -604,6 +606,33 @@ def interactive(collection, conf):
         program_info=f'{__productname__} v{__version__}',
         quit_keys=conf['keybindings']['quit'],
     )
+
+
+def forecast(collection, calendar_name: str, conf, config_byte, start_date, env=None):
+    """
+    :param batch: setting this to True will insert without asking for approval,
+                  even when an event with the same uid already exists
+    :type batch: bool
+    :param random_uid: whether to assign a random UID to imported events or not
+    :type random_uid: bool
+    :param format: the format string to print events with
+    :type format: str
+    """
+    try:
+        forecaster = Forecaster(collection, conf, env)
+        forecast_config = json.loads(config_byte.decode('utf-8'))
+        forecaster.parse_config(forecast_config, start_date)
+        forecaster.build_event_to_insert(calendar_name)
+    except Exception as error:
+        raise FatalError(error)
+
+    for event in forecaster.event_to_delete():
+        collection.delete(event.href, event.etag, event.calendar)
+
+    # for vevent in vevents:
+    #     import_event(vevent, collection, conf['locale'], True, format, env)
+
+    logger.debug("forecast done!")
 
 
 def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None,
