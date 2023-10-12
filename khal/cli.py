@@ -413,9 +413,12 @@ def _get_cli():
     @calendar_option
     @click.option('--start', '-s',
                   help=('Start date to forecast, now by default.'))
+    @click.option('--purge', '-p',
+                  help=('Start date to forecast, now by default.'),
+                  is_flag=True)
     @click.argument('forecast_conf', type=click.File('rb'), nargs=-1)
     @click.pass_context
-    def forecast(ctx, calendar, start, forecast_conf):
+    def forecast(ctx, calendar, start, purge, forecast_conf):
         '''Forecast events from an .json file (or stdin).
 
         '''
@@ -462,6 +465,7 @@ def _get_cli():
                     ctx.obj['conf'],
                     forecast_str,
                     start_date,
+                    purge,
                     env={"calendars": ctx.obj['conf']['calendars']},
                 )
             except FatalError as error:

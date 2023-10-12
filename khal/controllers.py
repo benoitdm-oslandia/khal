@@ -608,7 +608,7 @@ def interactive(collection, conf):
     )
 
 
-def forecast(collection, calendar_name: str, conf, config_byte, start_date, env=None):
+def forecast(collection, calendar_name: str, conf, config_byte, start_date, purge: bool, env=None):
     """
     :param batch: setting this to True will insert without asking for approval,
                   even when an event with the same uid already exists
@@ -622,17 +622,22 @@ def forecast(collection, calendar_name: str, conf, config_byte, start_date, env=
         forecaster = Forecaster(collection, conf, env)
         forecast_config = json.loads(config_byte.decode('utf-8'))
         forecaster.parse_config(forecast_config, start_date)
-        forecaster.build_event_to_insert(calendar_name)
+        vevents = forecaster.build_event_to_insert(calendar_name)
     except Exception as error:
         raise FatalError(error)
 
     for event in forecaster.event_to_delete():
         collection.delete(event.href, event.etag, event.calendar)
 
-    # for vevent in vevents:
-    #     import_event(vevent, collection, conf['locale'], True, format, env)
-
-    logger.debug("forecast done!")
+    if purge:
+        logger.info("Forecast purge only done! Supppressed events: "
+                    + str(len(forecaster.event_to_delete())))
+    else:
+        logger.info("Forecast clean done! Supppressed events: "
+                    + str(len(forecaster.event_to_delete())))
+        # for vevent in vevents:
+        #     import_event(vevent, collection, conf['locale'], True, format, env)
+        logger.info("Forecast done! New forecast events: " + str(len(vevents)))
 
 
 def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None,
