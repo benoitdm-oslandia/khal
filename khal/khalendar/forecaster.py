@@ -7,15 +7,20 @@ Created on 10 oct. 2023
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Dict
 
+from khal.custom_types import EventCreationTypes
 from khal.khalendar.khalendar import CalendarCollection
 
 logger = logging.getLogger('forecaster')
 
 
 class ForecastedWeek:
+    '''
+    Handle forecast week data: new/old tasks, time, etc.
+    '''
+
     def __init__(self, date, collection, locale):
         self.remains = 5.0
         self.tasks = []
@@ -24,9 +29,12 @@ class ForecastedWeek:
 
         self.first_day = date - timedelta(days=date.weekday() % 7)
         self.last_day = self.first_day + timedelta(days=5)
+        self.locale = locale
 
-        start_local = locale['local_timezone'].localize(self.first_day)
-        end_local = locale['local_timezone'].localize(self.last_day)
+        start_local = self.locale['local_timezone'].localize(
+            datetime.combine(self.first_day, datetime.min.time()))
+        end_local = self.locale['local_timezone'].localize(
+            datetime.combine(self.last_day, datetime.min.time()))
 
         start = start_local.replace(tzinfo=None)
         end = end_local.replace(tzinfo=None)
@@ -35,29 +43,103 @@ class ForecastedWeek:
         events_float = sorted(collection.get_floating(start, end))
         events = sorted(events + events_float)
 
+        # load already existing events (manually or forecasted)
         clock_regexp = re.compile(':clock1: ([0-9\\.]+)d')
+        # logger.warning(f'Found event for week {self.first_day}: {len(events)}')
         for event in events:
             if event.allday:
-                if event.description().contains(':DO_NOT_EDIT:'):
+                # logger.warning(f'event desc0: {event.description}')
+                if type(event.description) is list:
+                    desc = str(event.description[0])
+                else:
+                    desc = str(event.description)
+                # logger.warning(f'event desc1: {desc}')
+                if ':DO_NOT_EDIT:' in desc:
                     self.old_forecast_events.append(event)
                 else:
-                    self.all_day_events.append(event)
                     clock_duration = 1.0
-                    for line in event.description().splitlines():
-                        match_res = clock_regexp.match(line)
+                    for line in desc.splitlines():
+                        match_res = clock_regexp.search(line)
                         if match_res:
-                            clock_duration = float(match_res.group())
+                            clock_duration = float(match_res.group(1))
                             break
+                    task_from_event = ForecastedTask()
+                    task_from_event.since_date = event.start_local
+                    task_from_event.duration = clock_duration
+                    self.all_day_events.append(task_from_event)
                     self.remains -= clock_duration
 
     def build_event_to_insert(self, calendar_name: str):
-        # icalendar.new_vevent
-        # try:
-        #     event = collection.create_event_from_dict(event_args, calendar_name=calendar_name)
-        # except ValueError as error:
-        #     raise FatalError(error)
+        '''
+        Create event list according to existing events and new forecasted ones
+        '''
+        out: list[EventCreationTypes] = []
 
-        return []
+        def takeDuration(t: ForecastedTask):
+            return t.day_duration
+
+        def takeStartDate(t: ForecastedTask):
+            return t.since_date
+
+        # AllDayEventS clone
+        ades = self.all_day_events.copy()
+        # ForecastTaskS clone
+        fts = self.tasks.copy()
+        list.sort(ades, reverse=True, key=takeStartDate)
+        list.sort(fts, reverse=True, key=takeDuration)
+
+        # compute what remain per day according to existing task in calendar
+        week_allocation: list[ForecastedTask] = []
+        for day_idx in range(0, 5):
+            day_date = self.first_day + timedelta(days=day_idx)
+
+            t = ForecastedTask()
+            t.since_date = day_date
+            t.day_duration = 0.0
+
+            for ade in ades:
+                if ade.since_date == day_date:
+                    t.day_duration += ade.day_duration
+
+            week_allocation.append(t)
+
+        # allocate task to available days
+        while len(fts) > 0:
+            for day in week_allocation:
+                if day.day_duration + fts[0].day_duration <= 1.0:
+                    # update day remaining duration
+                    day.day_duration += fts[0].day_duration
+                else:
+                    # no room left today!
+                    continue
+                ft = fts.pop(0)
+
+                desc = f'''
+:clock1: {ft.day_duration}d
+:DO_NOT_EDIT:
+'''
+                summary = f'AUTO 1/{int(1/ft.day_duration)} {ft.summary}'
+
+                vevent = EventCreationTypes({
+                    'location': None,
+                    'categories': None,
+                    'repeat': None,
+                    'until': "",
+                    'alarms': "",
+                    'url': ft.url,
+                    'summary': summary,
+                    'allday': True,
+                    'description': desc,
+                    'dtstart': day.since_date,
+                    'dtend': day.since_date + timedelta(days=1),
+                    'timezone': self.locale['local_timezone'],
+                })
+                out.append(vevent)
+
+                if len(fts) == 0:
+                    break
+
+        return out
 
     def __repr__(self):
         return f'ForecastedWeek[remains: {self.remains}, '\
@@ -67,9 +149,12 @@ class ForecastedWeek:
 
 
 class ForecastedTask:
-    # TODO: summary / url
+    '''
+    A forecasted task. Used to hold configuration data and new forecasted task
+    '''
+
     def __init__(self):
-        self.since_date = datetime.now()
+        self.since_date = date.today()
         self.since_week_nb = self.since_date.isocalendar().year * 100 \
             + self.since_date.isocalendar().week
         self.day_duration = 1.0
@@ -81,7 +166,7 @@ class ForecastedTask:
         self.float = False
 
     def load_from_json(self, task):
-        self.since_date = datetime.strptime(task["since_date"], '%Y-%m-%d')
+        self.since_date = datetime.strptime(task["since_date"], '%Y-%m-%d').date()
         self.since_week_nb = self.since_date.isocalendar().year * 100 \
             + self.since_date.isocalendar().week
 
@@ -139,11 +224,15 @@ class ForecastedTask:
 
 
 class ForecastConfig:
-    def __init__(self, data):
+    '''
+    Create forecast input data from json config
+    '''
+
+    def __init__(self, json_data):
         self.forecasted_tasks = []
-        if "forecasted_tasks" not in data:
+        if "forecasted_tasks" not in json_data:
             raise ValueError("Key 'forecasted_tasks' not found in loaded data!")
-        for task in data["forecasted_tasks"]:
+        for task in json_data["forecasted_tasks"]:
             t = ForecastedTask()
             t.load_from_json(task)
             self.forecasted_tasks.append(t)
@@ -152,7 +241,8 @@ class ForecastConfig:
 
 class Forecaster:
     '''
-    classdocs
+    Try to forecast events in calendar by filling the week with event rules.
+    These rules are defined in a separated json file.
     '''
 
     def __init__(self, collection: CalendarCollection, khal_conf, env):
@@ -166,6 +256,9 @@ class Forecaster:
         self.weeks: Dict[str, ForecastedWeek] = {}
 
     def parse_config(self, config_data, start_date):
+        '''
+        load configuration and forecast tasks
+        '''
         self.forecast_conf = ForecastConfig(config_data)
 
         week_nb = start_date.isocalendar().year * 100 + start_date.isocalendar().week
@@ -207,13 +300,19 @@ class Forecaster:
             logger.warning("  task: " + str(t))
 
     def build_event_to_insert(self, calendar_name: str):
+        '''
+        Returns the list of new forecast events
+        '''
         out = []
         for week in self.weeks.values():
-            out.append(week.build_event_to_insert(calendar_name))
+            out += week.build_event_to_insert(calendar_name)
         return out
 
     def event_to_delete(self):
+        '''
+        Returns the list of previously forecast events
+        '''
         out = []
         for week in self.weeks.values():
-            out = out + week.old_forecast_events
+            out += week.old_forecast_events
         return out

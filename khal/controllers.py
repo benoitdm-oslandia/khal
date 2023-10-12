@@ -635,8 +635,8 @@ def forecast(collection, calendar_name: str, conf, config_byte, start_date, purg
     else:
         logger.info("Forecast clean done! Supppressed events: "
                     + str(len(forecaster.event_to_delete())))
-        # for vevent in vevents:
-        #     import_event(vevent, collection, conf['locale'], True, format, env)
+        for vevent in vevents:
+            new_from_dict(vevent, collection, conf, calendar_name, None, env)
         logger.info("Forecast done! New forecast events: " + str(len(vevents)))
 
 
