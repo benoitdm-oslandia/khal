@@ -281,8 +281,9 @@ def new(
 @click.argument("forecast_conf", type=click.File("rb"), nargs=-1)
 @click.pass_context
 def forecast(ctx, calendar, start, purge, forecast_conf):
-    """Forecast events from an .json file (or stdin)."""
-    logger.warning("in forecast cli")
+    """
+    Forecast events from an .json file (or stdin).
+    """
     collection = build_collection(ctx.obj["conf"], ctx.obj.get("calendar_selection", None))
     if len(collection.names) > 1 and ctx.obj["conf"]["default"]["default_calendar"] is None:
         raise click.UsageError(
@@ -313,9 +314,9 @@ def forecast(ctx, calendar, start, purge, forecast_conf):
             "No default calendar is configured, please provide one explicitly."
         )
     if start is None:
-        start_date = dt.now()
+        start_date = dt.date.today()
     else:
-        start_date = dt.datetime.strptime(start, "%Y-%m-%d")
+        start_date = dt.datetime.strptime(start, "%Y-%m-%d").date()
     for forecast_str, filename in forecast_strs:
         try:
             controllers.forecast(
