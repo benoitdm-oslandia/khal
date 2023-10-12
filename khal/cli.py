@@ -277,9 +277,10 @@ def new(
 @cli.command("forecast")
 @calendar_option
 @click.option("--start", "-s", help=("Start date to forecast, now by default."))
+@click.option("--purge", "-p", help=("Start date to forecast, now by default."), is_flag=True)
 @click.argument("forecast_conf", type=click.File("rb"), nargs=-1)
 @click.pass_context
-def forecast(ctx, calendar, start, forecast_conf):
+def forecast(ctx, calendar, start, purge, forecast_conf):
     """Forecast events from an .json file (or stdin)."""
     logger.warning("in forecast cli")
     collection = build_collection(ctx.obj["conf"], ctx.obj.get("calendar_selection", None))
@@ -323,6 +324,7 @@ def forecast(ctx, calendar, start, forecast_conf):
                 ctx.obj["conf"],
                 forecast_str,
                 start_date,
+                purge,
                 env={"calendars": ctx.obj["conf"]["calendars"]},
             )
         except FatalError as error:
