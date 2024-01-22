@@ -29,14 +29,13 @@ import datetime as dt
 import itertools
 import logging
 import os
-import os.path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
-from ..custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
-from ..icalendar import new_vevent
-from . import backend
-from .event import Event
-from .exceptions import (
+from khal.custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
+from khal.icalendar_wrapper import new_vevent
+from khal.khalendar import backend
+from khal.khalendar.event import Event
+from khal.khalendar.exceptions import (
     DuplicateUid,
     EtagMissmatch,
     NonUniqueUID,
@@ -44,7 +43,7 @@ from .exceptions import (
     UnsupportedFeatureError,
     UpdateFailed,
 )
-from .vdir import (
+from khal.khalendar.vdir import (
     AlreadyExistingError,
     CollectionNotFoundError,
     Vdir,

@@ -30,10 +30,10 @@ from shutil import get_terminal_size
 import click
 import click_log
 
-from . import __version__, controllers, khalendar
-from .exceptions import FatalError
-from .settings import InvalidSettingsError, NoConfigFile, get_config
-from .terminal import colored
+from khal import __version__, controllers, khalendar
+from khal.exceptions import FatalError
+from khal.settings import InvalidSettingsError, NoConfigFile, get_config
+from khal.terminal import colored
 
 try:
     from setproctitle import setproctitle
