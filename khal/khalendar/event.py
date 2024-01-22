@@ -28,8 +28,6 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-import icalendar
-import icalendar.cal
 import icalendar.prop
 import pytz
 from click import style
@@ -37,7 +35,7 @@ from pytz.tzinfo import StaticTzInfo
 
 from khal.custom_types import LocaleConfiguration
 from khal.exceptions import FatalError
-from khal.icalendar import cal_from_ics, delete_instance, invalid_timezone
+from khal.icalendar_wrapper import cal_from_ics, delete_instance, invalid_timezone
 from khal.parse_datetime import timedelta2str
 from khal.plugins import FORMATTERS
 from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time

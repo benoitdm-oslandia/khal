@@ -31,17 +31,16 @@ from enum import IntEnum
 from os import makedirs, path
 from typing import Any
 
-import icalendar
 import icalendar.cal
 import pytz
 from dateutil import parser
 
 from khal import utils
 from khal.custom_types import EventTuple, LocaleConfiguration
-from khal.icalendar import assert_only_one_uid, cal_from_ics
-from khal.icalendar import expand as expand_vevent
-from khal.icalendar import sanitize as sanitize_vevent
-from khal.icalendar import sort_key as sort_vevent_key
+from khal.icalendar_wrapper import assert_only_one_uid, cal_from_ics
+from khal.icalendar_wrapper import expand as expand_vevent
+from khal.icalendar_wrapper import sanitize as sanitize_vevent
+from khal.icalendar_wrapper import sort_key as sort_vevent_key
 
 from .exceptions import CouldNotCreateDbDir, NonUniqueUID, OutdatedDbVersionError, UpdateFailed
 

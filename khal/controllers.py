@@ -40,19 +40,17 @@ from khal.custom_types import (
     MonthDisplayType,
     WeekNumbersType,
 )
-from khal.exceptions import DateTimeParseError, FatalError
+from khal.exceptions import ConfigurationError, DateTimeParseError, FatalError
+from khal.icalendar_wrapper import cal_from_ics, split_ics
+from khal.icalendar_wrapper import sort_key as sort_vevent_key
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 from khal.khalendar.forecaster import Forecaster
-
-from .exceptions import ConfigurationError
-from .icalendar import cal_from_ics, split_ics
-from .icalendar import sort_key as sort_vevent_key
-from .khalendar.vdir import Item
-from .parse_datetime import timedelta2str
-from .terminal import merge_columns
-from .utils import human_formatter, json_formatter
+from khal.khalendar.vdir import Item
+from khal.parse_datetime import timedelta2str
+from khal.terminal import merge_columns
+from khal.utils import human_formatter, json_formatter
 
 logger = logging.getLogger("khal")
 

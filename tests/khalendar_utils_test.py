@@ -3,7 +3,7 @@ import datetime as dt
 import icalendar
 import pytz
 
-from khal import icalendar as icalendar_helpers
+from khal import icalendar_wrapper as icalendar_helpers
 from khal import utils
 
 from .utils import _get_text, _get_vevent_file

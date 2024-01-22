@@ -30,9 +30,9 @@ import dateutil.rrule
 import icalendar
 import pytz
 
-from .exceptions import UnsupportedRecurrence
-from .parse_datetime import rrulefstr
-from .utils import generate_random_uid, localize_strip_tz, str2alarm, to_unix_time
+from khal.exceptions import UnsupportedRecurrence
+from khal.parse_datetime import rrulefstr
+from khal.utils import generate_random_uid, localize_strip_tz, str2alarm, to_unix_time
 
 logger = logging.getLogger("khal")
 

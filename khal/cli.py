@@ -30,8 +30,8 @@ from shutil import get_terminal_size
 import click
 import click_log
 
-from . import controllers, plugins
-from .cli_utils import (
+from khal import controllers, plugins
+from khal.cli_utils import (
     _select_one_calendar_callback,
     build_collection,
     calendar_option,
@@ -42,10 +42,10 @@ from .cli_utils import (
     multi_calendar_select,
     prepare_context,
 )
-from .exceptions import FatalError
-from .plugins import COMMANDS
-from .terminal import colored
-from .utils import human_formatter, json_formatter
+from khal.exceptions import FatalError
+from khal.plugins import COMMANDS
+from khal.terminal import colored
+from khal.utils import human_formatter, json_formatter
 
 try:
     from setproctitle import setproctitle

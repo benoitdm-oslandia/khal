@@ -25,9 +25,9 @@ from locale import LC_ALL, LC_TIME, getlocale, setlocale
 
 from click import style
 
-from .khalendar import CalendarCollection
-from .terminal import colored
-from .utils import get_month_abbr_len
+from khal.khalendar import CalendarCollection
+from khal.terminal import colored
+from khal.utils import get_month_abbr_len
 
 setlocale(LC_ALL, "")
 

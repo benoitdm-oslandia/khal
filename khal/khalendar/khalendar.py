@@ -32,13 +32,13 @@ import logging
 import os
 import os.path
 from collections.abc import Iterable
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
 from khal.custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
-from khal.icalendar import new_vevent
-
-from . import backend
-from .event import Event
-from .exceptions import (
+from khal.icalendar_wrapper import new_vevent
+from khal.khalendar import backend
+from khal.khalendar.event import Event
+from khal.khalendar.exceptions import (
     DuplicateUid,
     EtagMissmatch,
     NonUniqueUID,
@@ -46,7 +46,7 @@ from .exceptions import (
     UnsupportedFeatureError,
     UpdateFailed,
 )
-from .vdir import (
+from khal.khalendar.vdir import (
     AlreadyExistingError,
     CollectionNotFoundError,
     Vdir,

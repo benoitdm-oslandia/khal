@@ -4,10 +4,9 @@ import textwrap
 
 import icalendar
 from freezegun import freeze_time
+from utils import LOCALE_BERLIN, _get_text, _replace_uid, normalize_component
 
-from khal.icalendar import new_vevent, split_ics
-
-from .utils import LOCALE_BERLIN, _get_text, _replace_uid, normalize_component
+from khal.icalendar_wrapper import new_vevent, split_ics
 
 
 def _get_TZIDs(lines):
