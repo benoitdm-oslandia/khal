@@ -15,6 +15,7 @@ from khal.khalendar.khalendar import CalendarCollection
 
 logger = logging.getLogger('forecaster')
 
+DO_NOT_EDIT_TAG = ':DO_NOT_EDIT:'
 
 class ForecastedWeek:
     '''
@@ -54,7 +55,8 @@ class ForecastedWeek:
                 else:
                     desc = str(event.description)
                 # logger.warning(f'event desc1: {desc}')
-                if ':DO_NOT_EDIT:' in desc:
+
+                if DO_NOT_EDIT_TAG in desc:
                     self.old_forecast_events.append(event)
                 else:
                     clock_duration = 1.0
@@ -66,6 +68,9 @@ class ForecastedWeek:
                     task_from_event = ForecastedTask()
                     task_from_event.since_date = event.start_local
                     task_from_event.duration = clock_duration
+                    if not event.url.startswith('http'):
+                        task_from_event.url = event.url
+                    task_from_event.summary = event.summary
                     self.all_day_events.append(task_from_event)
                     self.remains -= clock_duration
 
@@ -75,11 +80,11 @@ class ForecastedWeek:
         '''
         out: list[EventCreationTypes] = []
 
-        def takeDuration(t: ForecastedTask):
-            return t.day_duration
+        def takeDuration(task: ForecastedTask):
+            return task.day_duration
 
-        def takeStartDate(t: ForecastedTask):
-            return t.since_date
+        def takeStartDate(task: ForecastedTask):
+            return task.since_date
 
         # AllDayEventS clone
         ades = self.all_day_events.copy()
@@ -93,18 +98,20 @@ class ForecastedWeek:
         for day_idx in range(0, 5):
             day_date = self.first_day + timedelta(days=day_idx)
 
-            t = ForecastedTask()
-            t.since_date = day_date
-            t.day_duration = 0.0
+            task = ForecastedTask()
+            task.since_date = day_date
+            task.day_duration = 0.0
 
             for ade in ades:
                 if ade.since_date == day_date:
-                    t.day_duration += ade.day_duration
+                    task.day_duration += ade.day_duration
 
-            week_allocation.append(t)
+            week_allocation.append(task)
 
         # allocate task to available days
-        while len(fts) > 0:
+        has_allocated_task = True
+        while len(fts) > 0 and has_allocated_task:
+            has_allocated_task = False
             for day in week_allocation:
                 if day.day_duration + fts[0].day_duration <= 1.0:
                     # update day remaining duration
@@ -113,11 +120,20 @@ class ForecastedWeek:
                     # no room left today!
                     continue
                 ft = fts.pop(0)
+                has_allocated_task = True
 
-                desc = f'''
+                if ft.day_duration < 1.0:
+                    desc = f'''
 :clock1: {ft.day_duration}d
-:DO_NOT_EDIT:
+{DO_NOT_EDIT_TAG}
+Consumed: {ft.consumed}
 '''
+                else:
+                    desc = f'''
+{DO_NOT_EDIT_TAG}
+Consumed: {ft.consumed}
+'''
+
                 summary = f'AUTO 1/{int(1/ft.day_duration)} {ft.summary}'
 
                 vevent = EventCreationTypes({
@@ -138,6 +154,9 @@ class ForecastedWeek:
 
                 if len(fts) == 0:
                     break
+
+        if not has_allocated_task:
+            logger.warning(f'Unable to allocate task(s) for week {self.first_day}: {fts}')
 
         return out
 
@@ -261,22 +280,32 @@ class Forecaster:
         '''
         self.forecast_conf = ForecastConfig(config_data)
 
+        start_date = date.today()
+        for task in self.forecast_conf.forecasted_tasks:
+            if task.since_date < start_date:
+                start_date = task.since_date
+
         week_nb = start_date.isocalendar().year * 100 + start_date.isocalendar().week
         total_remain_days = 1
         while total_remain_days > 0:
-            logger.warning("Week " + str(week_nb))
+            logger.warning(f"Week {str(week_nb)} ({start_date})")
             total_remain_days = 0
 
             current_week = ForecastedWeek(start_date, self.collection, self.khal_conf['locale'])
             for task in self.forecast_conf.forecasted_tasks:
 
+                for existing_task in current_week.all_day_events:
+                    if existing_task.url == task.url:
+                        task.consumed = task.consumed + existing_task.duration
+
                 if task.since_week_nb <= week_nb and task.max_day - task.consumed > 0 \
                         and current_week.remains >= task.duration_per_week():
-                    for _ in range(0, task.repeat_per_week()):
+                    for r in range(0, task.repeat_per_week()):
                         forecasted_task = ForecastedTask()
                         forecasted_task.summary = task.summary
                         forecasted_task.url = task.url
                         forecasted_task.day_duration = task.day_duration
+                        forecasted_task.consumed = task.consumed + (r+1)*task.day_duration
                         current_week.tasks.append(forecasted_task)
 
                         current_week.remains = current_week.remains - task.day_duration
@@ -288,6 +317,8 @@ class Forecaster:
 
             logger.warning("  Total remain: " + str(total_remain_days))
             logger.warning("  Week remain: " + str(current_week.remains))
+            for t in current_week.all_day_events:
+                logger.warning("  existing: " + str(t))
             for t in current_week.tasks:
                 logger.warning("  planned: " + str(t))
 

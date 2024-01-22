@@ -412,9 +412,9 @@ def _get_cli():
     @cli.command('forecast')
     @calendar_option
     @click.option('--start', '-s',
-                  help=('Start date to forecast, now by default.'))
+                  help=('Start date to forecast, now by default. Deprecated.'))
     @click.option('--purge', '-p',
-                  help=('Start date to forecast, now by default.'),
+                  help=('Purge all forecasted event already in calendar.'),
                   is_flag=True)
     @click.argument('forecast_conf', type=click.File('rb'), nargs=-1)
     @click.pass_context
@@ -453,7 +453,7 @@ def _get_cli():
                 'please provide one explicitly.'
             )
         if start is None:
-            start_date = dt.date.today()
+            start_date = None #dt.date.today()
         else:
             start_date = dt.datetime.strptime(start, '%Y-%m-%d').date()
         for forecast_str, filename in forecast_strs:
