@@ -276,8 +276,10 @@ def new(
 
 @cli.command("forecast")
 @calendar_option
-@click.option("--start", "-s", help=("Start date to forecast, now by default."))
-@click.option("--purge", "-p", help=("Start date to forecast, now by default."), is_flag=True)
+@click.option("--start", "-s", help=("Start date to forecast, now by default. Deprecated."))
+@click.option(
+    "--purge", "-p", help=("Purge all forecasted event already in calendar."), is_flag=True
+)
 @click.argument("forecast_conf", type=click.File("rb"), nargs=-1)
 @click.pass_context
 def forecast(ctx, calendar, start, purge, forecast_conf):
@@ -314,7 +316,7 @@ def forecast(ctx, calendar, start, purge, forecast_conf):
             "No default calendar is configured, please provide one explicitly."
         )
     if start is None:
-        start_date = dt.date.today()
+        start_date = None  # dt.date.today()
     else:
         start_date = dt.datetime.strptime(start, "%Y-%m-%d").date()
     for forecast_str, filename in forecast_strs:
@@ -333,7 +335,7 @@ def forecast(ctx, calendar, start, purge, forecast_conf):
             logger.fatal(f"An error occurred when trying to import the file from '{filename}'")
             logger.fatal("Events from it will not be available in khal")
             rvalue = 1
-            sys.exit(rvalue)
+    sys.exit(rvalue)
 
 
 @cli.command("import")
