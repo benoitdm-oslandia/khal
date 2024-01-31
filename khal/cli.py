@@ -310,7 +310,7 @@ def forecast(ctx, calendar, start, purge, forecast_conf):
     else:
         forecast_strs = ((ics_file.read(), ics_file.name) for ics_file in forecast_conf)
 
-    calendar = calendar or ctx.obj["conf"]["default"]["default_calendar"]
+    calendar = ctx.obj["conf"]["default"]["default_calendar"]
     if calendar is None:
         raise click.BadParameter(
             "No default calendar is configured, please provide one explicitly."
@@ -319,6 +319,7 @@ def forecast(ctx, calendar, start, purge, forecast_conf):
         start_date = None  # dt.date.today()
     else:
         start_date = dt.datetime.strptime(start, "%Y-%m-%d").date()
+
     for forecast_str, filename in forecast_strs:
         try:
             controllers.forecast(
