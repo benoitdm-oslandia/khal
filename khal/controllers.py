@@ -21,6 +21,7 @@
 #
 
 import datetime as dt
+import json
 import logging
 import os
 import re
@@ -39,16 +40,15 @@ from khal.custom_types import (
     MonthDisplayType,
     WeekNumbersType,
 )
-from khal.exceptions import DateTimeParseError, FatalError
+from khal.exceptions import ConfigurationError, DateTimeParseError, FatalError
+from khal.icalendar_wrapper import cal_from_ics, split_ics
+from khal.icalendar_wrapper import sort_key as sort_vevent_key
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
-
-from .exceptions import ConfigurationError
-from .icalendar import cal_from_ics, split_ics
-from .icalendar import sort_key as sort_vevent_key
-from .khalendar.vdir import Item
-from .terminal import merge_columns
+from khal.khalendar.forecaster import Forecaster
+from khal.khalendar.vdir import Item
+from khal.terminal import merge_columns
 
 logger = logging.getLogger('khal')
 
@@ -94,7 +94,7 @@ def calendar(
     full=False,
     bold_for_light_color: bool=True,
     env=None,
-    ):
+):
     term_width, _ = get_terminal_size()
     lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
     rwidth = term_width - lwidth - 4
@@ -604,6 +604,38 @@ def interactive(collection, conf):
         program_info=f'{__productname__} v{__version__}',
         quit_keys=conf['keybindings']['quit'],
     )
+
+
+def forecast(collection, calendar_name: str, conf, config_byte, start_date, purge: bool, env=None):
+    """
+    :param batch: setting this to True will insert without asking for approval,
+                  even when an event with the same uid already exists
+    :type batch: bool
+    :param random_uid: whether to assign a random UID to imported events or not
+    :type random_uid: bool
+    :param format: the format string to print events with
+    :type format: str
+    """
+    try:
+        forecaster = Forecaster(collection, conf, env)
+        forecast_config = json.loads(config_byte.decode('utf-8'))
+        forecaster.parse_config(forecast_config, start_date)
+        vevents = forecaster.build_event_to_insert(calendar_name)
+    except Exception as error:
+        raise FatalError(error)
+
+    for event in forecaster.event_to_delete():
+        collection.delete(event.href, event.etag, event.calendar)
+
+    if purge:
+        logger.info("Forecast purge only done! Supppressed events: "
+                    + str(len(forecaster.event_to_delete())))
+    else:
+        logger.info("Forecast clean done! Supppressed events: "
+                    + str(len(forecaster.event_to_delete())))
+        for vevent in vevents:
+            new_from_dict(vevent, collection, conf, calendar_name, None, env)
+        logger.info("Forecast done! New forecast events: " + str(len(vevents)))
 
 
 def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None,

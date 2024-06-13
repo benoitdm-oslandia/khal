@@ -9,7 +9,7 @@ from freezegun import freeze_time
 
 import khal.khalendar.exceptions
 import khal.utils
-from khal import icalendar as icalendar_helpers
+from khal import icalendar_wrapper as icalendar_helpers
 from khal.khalendar import CalendarCollection
 from khal.khalendar.backend import CouldNotCreateDbDir
 from khal.khalendar.event import Event

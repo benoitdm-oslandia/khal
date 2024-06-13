@@ -30,10 +30,10 @@ from shutil import get_terminal_size
 import click
 import click_log
 
-from . import __version__, controllers, khalendar
-from .exceptions import FatalError
-from .settings import InvalidSettingsError, NoConfigFile, get_config
-from .terminal import colored
+from khal import __version__, controllers, khalendar
+from khal.exceptions import FatalError
+from khal.settings import InvalidSettingsError, NoConfigFile, get_config
+from khal.terminal import colored
 
 try:
     from setproctitle import setproctitle
@@ -408,6 +408,72 @@ def _get_cli():
             logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
+
+    @cli.command('forecast')
+    @calendar_option
+    @click.option('--start', '-s',
+                  help=('Start date to forecast, now by default. Deprecated.'))
+    @click.option('--purge', '-p',
+                  help=('Purge all forecasted event already in calendar.'),
+                  is_flag=True)
+    @click.argument('forecast_conf', type=click.File('rb'), nargs=-1)
+    @click.pass_context
+    def forecast(ctx, calendar, start, purge, forecast_conf):
+        '''
+        Forecast events from an .json file (or stdin).
+        '''
+        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
+        if len(collection.names) > 1 and \
+                ctx.obj['conf']['default']['default_calendar'] is None:
+            raise click.UsageError(
+                'When using batch import, please specify a calendar to import '
+                'into or set the `default_calendar` in the config file.')
+        rvalue = 0
+        # Default to stdin:
+        if not forecast_conf:
+            forecast_strs = ((sys.stdin.read(), 'stdin'),)
+
+            def isatty(_file):
+                try:
+                    return _file.isatty()
+                except Exception:
+                    return False
+
+            if isatty(sys.stdin) and os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
+                sys.stdin = open('/dev/tty')
+            else:
+                logger.warning('/dev/tty does not exist, importing might not work')
+        else:
+            forecast_strs = ((ics_file.read(), ics_file.name) for ics_file in forecast_conf)
+
+        calendar = ctx.obj['conf']['default']['default_calendar']
+        if calendar is None:
+            raise click.BadParameter(
+                'No default calendar is configured, '
+                'please provide one explicitly.'
+            )
+        if start is None:
+            start_date = None #dt.date.today()
+        else:
+            start_date = dt.datetime.strptime(start, '%Y-%m-%d').date()
+
+        for forecast_str, filename in forecast_strs:
+            try:
+                controllers.forecast(
+                    collection,
+                    calendar,
+                    ctx.obj['conf'],
+                    forecast_str,
+                    start_date,
+                    purge,
+                    env={"calendars": ctx.obj['conf']['calendars']},
+                )
+            except FatalError as error:
+                logger.debug(error, exc_info=True)
+                logger.fatal(f"An error occurred when trying to import the file from '{filename}'")
+                logger.fatal("Events from it will not be available in khal")
+                rvalue = 1
+        sys.exit(rvalue)
 
     @cli.command('import')
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),

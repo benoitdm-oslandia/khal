@@ -1,0 +1,41 @@
+{
+    "forecasted_tasks": [
+        {
+            "summary": "jnt",
+            "url": "JNT",
+            "since_date": "2023-10-01",
+            "repeat_per_week": 1,
+            "max": 10
+        },
+        {
+            "summary": "holidays",
+            "url": "CP",
+            "since_date": "2023-10-15",
+            "repeat_per_week": 4,
+            "max": "4"
+        },
+        {
+            "summary": "qgis",
+            "url": "CODE_QGIS",
+            "since_date": "2023-10-07",
+            "repeat_per_week": 2,
+            "day_duration": 0.5,
+            "max": 15
+        },
+        {
+            "summary": "other",
+            "url": "CODE_OTHER",
+            "repeat_per_week": 2,
+            "since_date": "2023-10-01",
+            "max": 6,
+            "float": true
+        },
+        {
+            "summary": "filler",
+            "url": "CODE_FILLER",
+            "since_date": "2023-10-08",
+            "max": 6,
+            "float": true
+        }
+    ]
+}

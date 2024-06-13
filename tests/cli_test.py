@@ -124,6 +124,16 @@ def test_direct_modification(runner):
     assert result.output == ''
 
 
+def test_forecast(runner):
+    runner = runner(days=2)
+    result = runner.invoke(main_khal, ['-v', 'DEBUG', 'forecast',
+                                       '-s', '2023-10-01', 'forecast.json'])
+    print(result.stdout)
+    print("exception: " + str(result.exception))
+    assert not result.exception
+#    assert result.output == ''
+
+
 def test_simple(runner):
     runner = runner(days=2)
     result = runner.invoke(main_khal, ['list'])
@@ -431,6 +441,7 @@ def test_no_default_new(runner):
             "please provide one explicitly.") in result.output
     assert result.exit_code == 2
 
+
 def test_print_bad_ics(runner):
     """Attempt to print a .ics that is malformed, but does not have a DST-related error."""
     runner = runner()
@@ -439,6 +450,7 @@ def test_print_bad_ics(runner):
     expected = ValueError("Invalid iCalendar duration: PT-2H")
     assert expected.__class__ == result.exception.__class__
     assert expected.args == result.exception.args
+
 
 def test_import(runner, monkeypatch):
     runner = runner()

@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from khal.exceptions import DateTimeParseError, FatalError
-from khal.icalendar import new_vevent
+from khal.icalendar_wrapper import new_vevent
 from khal.parse_datetime import (
     construct_daynames,
     eventinfofstr,
