@@ -324,7 +324,10 @@ class Forecaster:
                             break
                     task.consumed = task.consumed + task.duration_per_week()
 
-                total_remain_days = total_remain_days + (task.max_day - task.consumed)
+                if task.max_day > task.consumed:
+                    # some existing allocations can exceed the forecast max_day.
+                    # In this case, existing allocation will falsely reduce the total_remain_days.
+                    total_remain_days = total_remain_days + (task.max_day - task.consumed)
 
             logger.warning("  Total remain: " + str(total_remain_days))
             logger.warning("  Week remain: " + str(current_week.remains))
