@@ -7,7 +7,7 @@ Patrice Peterson - runiq [at] archlinux [dot] us
 Eric Scheibler - email [at] eric-scheibler [dot] de - http://eric-scheibler.de
 Pierre David - pdagog [at] gmail [dot] com
 Markus Unterwaditzer - markus [at] unterwaditzer [dot] net - https://unterwaditzer.net
-Hugo Osvaldo Barrera - hugo@barrera.io - https://hugo.barrera.io
+Hugo Osvaldo Barrera - hugo@whynothugo.nl - https://whynothugo.nl
 Bradley Jones - caffeinatedbrad [at] gmail [dot] com - http://caffeinatedbrad.com
 Micah Nordland - micah [at] rehack [dot] me - https://w3.thoughtfuldragon.com/
 Thomas Glanzmann - thomas [at] glanzmann [dot] de - https://thomas.glanzmann.de/
@@ -52,3 +52,10 @@ Jason Cox - me [at] jasoncarloscox [dot] com - https://jasoncarloscox.com
 Michael Tretter - michael.tretter [at] posteo [dot] net
 Raúl Medina - raulmgcontact [at] gmail (dot] com
 Matthew Rademaker - matthew.rademaker [at] gmail [dot] com
+Valentin Iovene - val [at] too [dot] gy
+Julian Wollrath
+Mattori Birnbaum - me [at] mattori [dot] com - https://mattori.com
+Pi R
+Alnoman Kamil - noman [at] kamil [dot] gr - https://kamil.gr
+Leonardo Taccari - iamleot [at] gmail [dot] com
+Jorenar - dev [at] jorenar [dot] com - https://jorenar.com

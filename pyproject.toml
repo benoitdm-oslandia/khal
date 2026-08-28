@@ -1,13 +1,100 @@
+[project]
+name = "khal"
+dynamic = ["version"]
+description = "Standards based terminal calendar"
+readme = "README.rst"
+authors = [
+  {name = "khal contributors", email = "khal@lostpackets.de"},
+]
+license = "MIT"
+license-files = ["doc/source/license.rst"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console :: Curses",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Communications",
+  "Topic :: Utilities",
+]
+requires-python = ">=3.10,<3.15"
+dependencies = [
+    "click>=3.2",
+    "click_log>=0.2.0",
+    "icalendar>=6.0.0,<8.0.0",
+    "urwid>=2.6.15",
+    "pyxdg",
+    "pytz",
+    "python-dateutil",
+    "configobj",
+    "tzlocal>=1.0",
+]
+[project.optional-dependencies]
+proctitle = [
+  "setproctitle"
+]
+test = [
+  "pytest",
+  "freezegun",
+  "hypothesis",
+  "packaging",
+  "vdirsyncer",
+]
+docs = [
+  "sphinx!=1.6.1",
+  "sphinxfeed-lsaffre",
+  "sphinx-rtd-theme",
+]
+
+# install all optional dependencies
+all = ["khal[proctitle,test,docs]"]
+
+[project.urls]
+homepage = "http://lostpackets.de/khal/"
+repository = "https://github.com/pimutils/khal"
+
+[project.scripts]
+khal = "khal.cli:main_khal"
+ikhal = "khal.cli:main_ikhal"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+  # hypothesis triggers warnings while walking modules inside urwid.
+  "ignore:.*urwid\\.(lcd_display|html_fragment|web_display|monitored_list|listbox|treetools) is moved to.*:DeprecationWarning",
+]
+
+[build-system]
+requires = ["setuptools>=77", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["khal*"]
+
+[tool.setuptools_scm]
+version_file = "khal/version.py"
+
 [tool.ruff]
-select = ["E", "F", "W", "I", "B0", "UP", "C4"]
-ignore = ["B008"]
 line-length = 100
-target-version = "py38"
+
+[tool.ruff.lint]
+extend-select = [
+    "B0",
+    "C4",
+    "E",
+    "I",
+    "PT",
+    "TID",
+    "UP",
+    "W",
+]
 
 [tool.coverage.report]
 exclude_lines = [
     "if TYPE_CHECKING:",
 ]
-
-[tool.mypy]
-ignore_missing_imports = true

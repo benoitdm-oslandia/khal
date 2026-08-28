@@ -71,8 +71,13 @@ readonly = boolean(default=False)
 # *calendars* subsection will be used.
 type = option('calendar', 'birthdays', 'discover', default='calendar')
 
+# All email addresses associated with this account, separated by commas.
+# For now it is only used to check what participation status ("PARTSTAT")
+# belongs to the user.
+addresses = force_list(default='')
+
 [sqlite]
-# khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
+# khal stores its internal caching database here, by default this will be in the *$XDG_CACHE_HOME/khal/khal.db* (this will most likely be *~/.cache/khal/khal.db*).
 path = expand_db_path(default=None)
 
 # It is mandatory to set (long)date-, time-, and datetimeformat options, all others options in the **[locale]** section are optional and have (sensible) defaults.
@@ -210,11 +215,21 @@ highlight_event_days = boolean(default=False)
 timedelta = timedelta(default='2d')
 
 
-# Define the defaut duration for a day-long event ('khal new' only)
-default_event_duration = timedelta(default='1d')
-
 # Define the default duration for an event ('khal new' only)
-default_dayevent_duration = timedelta(default='1h')
+default_event_duration = timedelta(default='1h')
+
+# Define the defaut duration for a day-long event ('khal new' only)
+default_dayevent_duration = timedelta(default='1d')
+
+# Define the default alarm for new events, e.g. '15m'
+default_event_alarm = timedelta(default='')
+
+# Define the default alarm for new all dayevents, e.g. '12h'
+default_dayevent_alarm = timedelta(default='')
+
+# Whether the mouse should be enabled in interactive mode ('khal interactive' and
+# 'ikhal' only)
+enable_mouse = boolean(default=True)
 
 
 # The view section contains configuration options that effect the visual appearance
@@ -240,21 +255,10 @@ blank_line_before_day = boolean(default=False)
 
 # Choose a color theme for khal.
 #
-# This is very much work in progress. Help is really welcome! The two currently
-# available color schemes (*dark* and *light*) are defined in
-# *khal/ui/colors.py*, you can either help improve those or create a new one
-# (see below). As ikhal uses urwid, have a look at `urwid's documentation`__
-# for how to set colors and/or at the existing schemes. If you cannot change
-# the color of an element (or have any other problems) please open an issue on
-# github_.
-#
-# If you want to create your own color scheme, copy the structure of the
-# existing ones, give it a new and unique name and also add it as an option in
-# `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
-#
-# __ http://urwid.org/manual/displayattributes.html
-# .. _github: # https://github.com/pimutils/khal/issues
-theme = option('dark', 'light', default='dark')
+# Khal ships with two color themes, *dark* and *light*.  Additionally, plugins
+# might supply different color schemes.
+# You can also define your own color theme in the [palette] section.
+theme = string(default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some
 # (groups of) elements or not. There are currently several different frame
@@ -320,3 +324,36 @@ multiple_on_overflow = boolean(default=False)
 # actually disables highlighting for events that should use the
 # default color.
 default_color = color(default='')
+
+# Override ikhal's color theme with a custom palette. This is useful to style
+# certain elements of ikhal individually.
+# Palette entries take the form of `key = foreground, background, mono,
+# foreground_high, background_high` where foreground and background are used in
+# "low color mode"  and foreground_high and background_high are used in "high
+# color mode" and mono if only monocolor is supported. If you don't want to set
+# a value for a certain color, use an empty string (`''`).
+# Valid entries for low color mode are listed on the `urwid website
+# <http://urwid.org/manual/displayattributes.html#standard-foreground-colors>`_. For
+# high color mode you can use any valid 24-bit color value, e.g. `'#ff0000'`.
+#
+# .. note::
+#     24-bit colors must be enclosed in single quotes to be parsed correctly,
+#     otherwise the `#` will be interpreted as a comment.
+#
+# Most modern terminals should support high color mode.
+#
+# Example entry (particular ugly):
+#
+# .. highlight:: ini
+#
+# ::
+#
+#  [palette]
+#  header = light red, default, default, '#ff0000', default
+#  edit = '', '', 'bold', '#FF00FF', '#12FF14'
+#  footer = '', '', '', '#121233', '#656599'
+#
+# See the default palettes in `khal/ui/colors.py` for all available keys.
+# If you can't theme an element in ikhal, please open an issue on `github
+# <https://github.com/pimutils/khal/issues/new/choose>`_.
+[palette]

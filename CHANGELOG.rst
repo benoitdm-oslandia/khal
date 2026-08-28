@@ -7,13 +7,77 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.11.3
+0.14.1
 ======
-not released yet
+2026-08-21
+* FIX add timezone when assigning start/end time
+* FIX crash on urwid >= 4.0.5
+* NEW add alarms-list output formats
 
+0.14.0
+======
+2026-03-24
+
+* CHANGE the ``pkg_resources`` library is no longer required.
+* FIX the location of caching database to ``$XDG_CACHE_HOME``
+* FIX color of eventcolumn when editing events in ikhal
+* FIX added support for ``icalendar>=7.0.0``.
+* NEW DEPENDENCY sphinxfeed-lsaffre
+* DROPPED DEPENDENCY sphinxcontrib-newsfeed
+* NEW support python 3.14
+* DROPPED support for python versions < 3.10.
+
+0.13.0
+======
+2025-04-15
+
+* UPDATED DEPENDENCY icalendar >= 6.0.0 is now required
+* UPDATED DEPENDENCY setuptools >= 77 is now required
+
+0.12.0
+======
+2025-04-14
+
+* FIX Don't install tests module.
+* DROPPED support for python versions < 3.9.
+
+0.11.4
+======
+2025-04-10
+
+* UPDATED REQUIREMENT urwid is now required >= 2.6.15
+* NEW REQUIREMENT for tests on python >= 3.12: pkg_resources
 * optimization in ikhal when editing events in the far future or past
 * FIX an issue in ikhal with updating the view of the event list after editing
   an event
+* NEW properties of ikhal themes (dark and light) can now be overriden from the
+  config file (via the new [palette] section, check the documenation)
+* NEW timedelta strings can now have a leading ``+``, e.g. ``+1d``
+* NEW Add ``--json`` option to output event data as JSON objects
+* NEW Add default alarms configuration option
+* FIX defaults for ``default_event_duration`` and ``default_dayevent_duration``
+  where mixed up, ``default_dayevent_duration`` is the default for all-day events
+* NEW event format option ``status-symbol`` which represents the status of an
+  event with a symbol (e.g. ``✓`` for confirmed, ``✗`` for cancelled, ``?`` for
+  tentative)
+* NEW event format option ``partstat-symbol`` which represents the participation
+  status of an event with a symbol (e.g. ``✓`` for accepted, ``✗`` for declined,
+  ``?`` for tentative); partication status is shown for the email addresses
+  configured for the event's calendar
+* NEW support for color theme, command, and formatter plugins
+* FIX an issue where ikhal would forget changes to time or date fields if you
+  left the field with page up/down or meta+enter
+* NEW support python 3.13
+* CHANGE various UI improvments to ikhal.
+* FIX Deleting multiple of instances of a recurring event in ikhal
+* NEW Add ``enable_mouse`` configuration option.
+* CHANGE the ``atomicwrites`` library is no longer required.
+
+0.11.3
+======
+2024-02-12
+
+* FIX support urwid 2.4.2
 
 0.11.2
 ======

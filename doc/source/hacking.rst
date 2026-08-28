@@ -31,6 +31,36 @@ Before we will accept your PR, we will ask you to:
  * make sure your patch conforms with :pep:`008` (should be covered by passing
    tests)
 
+Plugins
+-------
+
+Khal now supports plugins, currently for supporting new commands (`example
+command plugin`_), formatting (`example formatting plugin`_), and
+colors (`example color plugin`_).
+
+If you want to develop a new feature, please check if it can be implemented as
+a plugin.  If you are unsure, please ask us, we will gladly help you and, if
+needed, also extend the plugin API.  We would like to see new functionality
+matured in plugins before we consider integrating it into khal's core.
+
+.. _`example command plugin`: https://github.com/geier/khal_navigate
+.. _`example formatting plugin`: https://github.com/tcuthbert/khal/tree/plugin/example
+.. _`example color plugin`: https://github.com/geier/khal_gruvbox/tree/importlib
+
+
+Color scheme plugins
+*********************
+
+Khal color schemes plugins are only availlable for the `ikhal` interface. They
+are installed as python packages (e.g. `python -m pip install khal_gruvbox`).
+A color scheme plugin must provide an entry point `khal_colorscheme` and contain
+an urwid palette definition. The palette definition is a list of tuples, where
+each tuple contains an attribute name and a color definition.  See the `urwid
+documentation`_ for more information. All currently avaialable attributes can be
+found in `khal's source code`_.
+
+.. _`urwid documentation`: http://urwid.org/manual/displayattributes.html
+.. _`khal's source code`: https://github.com/pimutils/khal/blob/master/khal/ui/colors.py
 
 General notes for developing khal (and lots of other python packages)
 ---------------------------------------------------------------------
@@ -109,10 +139,10 @@ Documentation
 *************
 Khal's documentation, which is living in :file:`doc`, is using sphinx_ to
 generate the html documentation as well as the man page from the same sources.
-After install `sphinx` and `sphinxcontrib-newsfeed` you should be able to build
+After install `sphinx` and `sphinxfeed-lsaffre` you should be able to build
 the documentation with :command:`make html` and :command:`make man` respectively
 from the root of the :file:`doc` directory (note that this requires `GNU make`,
-so on some system running :command:`gmake` make be required).
+so on some system running :command:`gmake` may be required).
 
 If you make any changes to how a user would interact with khal, please change or
 add the relevant section(s) in the documentation, which uses the

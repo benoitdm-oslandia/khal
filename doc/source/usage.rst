@@ -115,6 +115,9 @@ Several options are common to almost all of :program:`khal`'s commands
    alarm-symbol
         An alarm symbol (alarm clock) if the event has at least one alarm.
 
+   alarms-list
+        A comma-separated list of alarms for the event (e.g., `alarm1@-15m, getready@-1h`).
+
    location
         The event location.
 
@@ -150,6 +153,12 @@ Several options are common to almost all of :program:`khal`'s commands
        The status of the event (if this event has one), something like
        `CONFIRMED` or `CANCELLED`.
 
+    status-symbol
+       The status of the event as a symbol, `✓` or `✗` or `?`.
+
+    partstat-symbol
+        The participation status of the event as a symbol, `✓` or `✗` or `?`.
+
    cancelled
        The string `CANCELLED` (plus one blank) if the event's status is
        cancelled, otherwise nothing.
@@ -168,8 +177,24 @@ Several options are common to almost all of :program:`khal`'s commands
    url
        The URL embedded in the event, otherwise nothing.
 
+   url-separator
+        A separator: " :: " that appears when there is a url.
+
+   duration
+       The duration of the event in terms of days, hours, months, and seconds
+       (abbreviated to `d`, `h`, `m`, and `s` respectively).
+
+   repeat-pattern
+       The raw iCal recurrence rule if the event is repeating.
+
+   all-day
+       A boolean indicating whether it is an all-day event or not.
+
+   categories
+       The categories of the event.
+
    By default, all-day events have no times. To see a start and end time anyway simply
-   add `-full` to the end of any template with start/end, for instance
+   add `-full` to the end of any template with start/end or duration, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
    of being empty for all-day events).
 
@@ -186,6 +211,38 @@ Several options are common to almost all of :program:`khal`'s commands
    ::
 
            khal list --format "{title} {description}"
+
+
+.. option:: --json FIELD ...
+
+   Works similar to :option:`--format`, but instead of defining a format string a JSON
+   object is created for each specified field. The matching events are collected into
+   a JSON array. This option accepts the following subset of :option:`--format`
+   template options::
+
+           title, description, uid, start, start-long, start-date,
+           start-date-long, start-time, end, end-long, end-date,
+           end-date-long, end-time, start-full, start-long-full,
+           start-date-full, start-date-long-full, start-time-full,
+           end-full, end-long-full, end-date-full, end-date-long-full,
+           end-time-full, repeat-symbol, alarms-list, location, calendar,
+           calendar-color, start-style, to-style, end-style,
+           start-end-time-style, end-necessary, end-necessary-long,
+           status, cancelled, organizer, url, duration, duration-full,
+           repeat-pattern, all-day, categories
+
+
+   Note that `calendar-color` will be the actual color name rather than the ANSI color code,
+   and the `repeat-symbol`, `status`, and `cancelled` values will have leading/trailing
+   whitespace stripped.  Additionally, if only the special value `all` is specified then
+   all fields will be enabled.
+
+   Below is an example command which prints a JSON list of objects containing the title and
+   description of all events today.
+
+    .. code-block:: console
+
+           khal list --json title --json description
 
 
 .. option:: --day-format DAYFORMAT
@@ -225,11 +282,11 @@ Commands
 list
 ****
 shows all events scheduled for a given date (or datetime) range, with custom
-formatting:
-::
+formatting::
 
-        khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--day-format DAYFORMAT] [--once] [--notstarted] [START [END | DELTA] ]
+        khal list [-a CALENDAR ... | -d CALENDAR ...]
+        [--format FORMAT] [--json FIELD ...] [--day-format DAYFORMAT]
+        [--once] [--notstarted] [START [END | DELTA] ]
 
 START and END can both be given as dates, datetimes or times (it is assumed
 today is meant in the case of only a given time) in the formats configured in
@@ -245,6 +302,17 @@ The `--once` option only allows events to appear once even if they are on
 multiple days. With the `--notstarted` option only events are shown that start
 after `START`.
 
+**Some examples**
+
+Including or excluding specific calendars:
+
+* `khal list -d soccer` will display events, in list form, from every calendar except "soccer."
+* `khal list -a soccer` will display events, in list form, from only the "soccer" calendar.
+
+Working with date ranges:
+
+* `khal list -a soccer today 30d` will show all events in next 30 days (from the "soccer" calendar).
+* `khal list 2019-12-01 31d` will show all all events for the 31 days following Dec 1, 2019.
 
 at
 **
@@ -256,7 +324,8 @@ start.
 
 ::
 
-        khal at [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
+        khal at [-a CALENDAR ... | -d CALENDAR ...]
+        [--format FORMAT] [--json FIELD ...]
         [--notstarted] [[START DATE] TIME | now]
 
 calendar

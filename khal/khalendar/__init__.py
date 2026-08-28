@@ -19,4 +19,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from .khalendar import CalendarCollection  # noqa: F401  # type: ignore
+from khal.khalendar.khalendar import (
+    CalendarCollection as CalendarCollection,  # noqa: F401  # type: ignore
+)
